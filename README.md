@@ -8,7 +8,6 @@ This repository serves as a <b>track record</b> of all changes in my GD clone an
 > [!NOTE]
 > The engine *(kind off??)* is still being developed at this state..
 
-<br>
 
 # Building process
 
