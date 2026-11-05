@@ -3,7 +3,7 @@ A sloppy recreation of geometry dash using the raylib graphical library. All fil
 
 ## Context 
 
-This repository serves as a <b>track record</b> of all changes in my GD clone and as a way to pass the time To eliminate boredom *-- insert dramatic music*)
+This repository serves as a <b>track record</b> of all changes in my GD clone and as a way to pass the time (To eliminate boredom *-- insert dramatic music*)
 
 > [!NOTE]
 > The engine *(kind off??)* is still being developed at this state..
