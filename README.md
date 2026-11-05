@@ -1,5 +1,5 @@
 # Fishen - (Scrambled Tuna egg)
-A sloppy recreation of geometry dash using the raylib graphical library. All files must be built by the user if downloaded, this requires you to own <a href="https://cmake.org/getting-started/">CMake</a>.
+A sloppy recreation of geometry dash using the raylib graphical library. All files must be built by the user if downloaded, this requires you to have <a href="https://cmake.org/getting-started/">CMake</a> and Git installed on your computer.
 
 ## Context 
 
