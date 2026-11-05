@@ -6,6 +6,6 @@
 
 // definition
 #define FRAMERATE 60
-#define WIDTH 1000
-#define HEIGHT 600
+#define WIDTH 1600
+#define HEIGHT 900
 #define WINDOW_TITLE "Fishen"
