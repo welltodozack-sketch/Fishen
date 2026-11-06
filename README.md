@@ -17,7 +17,7 @@ If you wish to check out the project for yourself with the intent off adding or 
 
 ## Cloning into Fishen
 > [!CAUTION]
-> Keep the terminal open throughout the entire process!
+> This documentation was written with only Windows users in mind. If you are using linux (Like me :3) you should already be familiar with the CLI!
 
 <br>
 
@@ -88,7 +88,10 @@ Lets create a new folder inside our Fishen cloned directory:
 ```cmd
 cd .. ; mkdir build ; cd build
 ```
-* *If you are located inside the Fishen cloned folder:*
+> [!WARNING]
+> Copy the next command only if you are located inside the Fishen cloned folder, for example:
+> 
+> "C:\Users\User\Downloads\Fishen"
 ```cmd
 mkdir build ; cd build
 ```
