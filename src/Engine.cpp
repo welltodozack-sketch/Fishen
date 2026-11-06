@@ -51,6 +51,7 @@ void checkCollisions(Player& PLAYER, World& WORLD) {
     if (CheckCollisionRecs(PLAYER.hitbox, WORLD.groundBox)) {
         PLAYER.isTouching = true;
         PLAYER.y = WORLD.groundBox.y - (PLAYER.size / 2.0f);
+        PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
         PLAYER.velocity = 0.0f;
     }
 }
@@ -115,8 +116,8 @@ int main(void)
     {
         // Background checks
         handleInputs(PLAYER);
-        checkCollisions(PLAYER, WORLD);
         updatePlayer(PLAYER);
+        checkCollisions(PLAYER, WORLD);
 
         // Update frames
         BeginDrawing();
@@ -129,6 +130,7 @@ int main(void)
 
     CloseWindow();
     UnloadTexture(PLAYER.cube);
+    UnloadTexture(WORLD.ground);
 
     return 0;
 }
