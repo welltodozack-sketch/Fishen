@@ -1,14 +1,16 @@
 #include "Fishen.hpp"
+#include "raylib.h"
 
 struct Player {
     bool isTouching;
     int size;
     float x, y, rotation, jumpPower, velocity;
     Texture2D cube;
-    Rectangle source, destination;
+    Rectangle hitbox;
 };
 
 struct World {
+    float x, y;
     Texture2D ground, backGround;
     Rectangle groundBox;
 };
@@ -25,14 +27,13 @@ void initStructs(Player& PLAYER, World& WORLD) {
     PLAYER.velocity = 0.0f;
 
     PLAYER.cube = LoadTexture("../resources/textures/icon1.png");
+    PLAYER.hitbox = {PLAYER.x - (PLAYER.size / 2.0f), PLAYER.y - (PLAYER.size / 2.0f), static_cast<float>(PLAYER.size), static_cast<float>(PLAYER.size)};
 
     // Background and foreground
     WORLD.ground = LoadTexture("../resources/textures/ground1.png");
-    WORLD.groundBox = {0, 0, static_cast<float>(WORLD.ground.width), static_cast<float>(WORLD.ground.height)};
-}
-
-void drawBackgroundAndForeground(World& WORLD) {
-    DrawTextureEx(WORLD.ground, Vector2({0, static_cast<float>(GetScreenHeight()) - WORLD.ground.height / 2.0f}), 0.0f, 1.0f, WHITE);
+    WORLD.x = 0.0f;
+    WORLD.y = static_cast<float>(GetScreenHeight() - WORLD.ground.height);
+    WORLD.groundBox = {WORLD.x, WORLD.y, static_cast<float>(WORLD.ground.width), static_cast<float>(WORLD.ground.height)};
 }
 
 void handleInputs(Player& PLAYER) {
@@ -46,11 +47,11 @@ void handleInputs(Player& PLAYER) {
         }
 }
 
-void checkCollisions(Player& PLAYER) {
-    if (PLAYER.y > GetScreenHeight() - PLAYER.size) {
+void checkCollisions(Player& PLAYER, World& WORLD) {
+    if (CheckCollisionRecs(PLAYER.hitbox, WORLD.groundBox)) {
         PLAYER.isTouching = true;
+        PLAYER.y = WORLD.groundBox.y - (PLAYER.size / 2.0f);
         PLAYER.velocity = 0.0f;
-        PLAYER.y = GetScreenWidth() - PLAYER.size;
     }
 }
 
@@ -74,11 +75,16 @@ void updatePlayer(Player& PLAYER) {
         PLAYER.rotation += 5.0f;
     }
     else {
-        PLAYER.y = GetScreenHeight() - PLAYER.size;
         handlePlayerRotation(PLAYER);
     }
 
     PLAYER.y -= PLAYER.velocity;
+    PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
+    PLAYER.hitbox.x = PLAYER.x - (PLAYER.size / 2.0f);
+}
+
+void drawBackgroundAndForeground(World& WORLD) {
+    DrawTextureEx(WORLD.ground, Vector2({WORLD.x, WORLD.y}), 0.0f, 1.0f, WHITE);
 }
 
 void drawPlayer(Player& PLAYER) {
@@ -88,6 +94,11 @@ void drawPlayer(Player& PLAYER) {
         Vector2({PLAYER.size / 2.0f, PLAYER.size / 2.0f}),
         PLAYER.rotation,
         WHITE);
+}
+
+void drawHitboxes(Player& PLAYER, World& WORLD) {
+    DrawRectangleLinesEx(PLAYER.hitbox, 4.0f, RED); // PLAYER HITBOXES
+    DrawRectangleLinesEx(WORLD.groundBox, 4.0f, RED); // GROUND HITBOXES
 }
 
 int main(void)
@@ -104,7 +115,7 @@ int main(void)
     {
         // Background checks
         handleInputs(PLAYER);
-        checkCollisions(PLAYER);
+        checkCollisions(PLAYER, WORLD);
         updatePlayer(PLAYER);
 
         // Update frames
@@ -112,6 +123,7 @@ int main(void)
             ClearBackground(BLACK);
             drawBackgroundAndForeground(WORLD);
             drawPlayer(PLAYER);
+            // drawHitboxes(PLAYER, WORLD);
         EndDrawing();
     }
 
