@@ -36,7 +36,7 @@ cd Fishen
 
 ## Setting up Raylib
 > [!IMPORTANT]
-> The repository provides the CMakeLists.txt file by default. Do not copy the following example, unless your CMakeLists.txt file is lost.
+> The repository provides the CMakeLists.txt file by default. Do not copy the following config example, unless your CMakeLists.txt file is lost.
 
 Contents of CMakeLists.txt config file:
 ```cmake
