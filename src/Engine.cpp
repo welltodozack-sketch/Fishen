@@ -1,4 +1,6 @@
 #include "Fishen.hpp"
+#include "raylib.h"
+#include <unordered_map>
 
 struct Player {
     bool isTouching;
@@ -14,7 +16,22 @@ struct World {
     Rectangle groundBox;
 };
 
-void initStructs(Player& PLAYER, World& WORLD) {
+void loadTextureData(std::string path, std::unordered_map<std::string, Texture2D>& Textures) {
+    if (std::filesystem::exists(path)) {
+        std::ifstream Data;
+        Data.open(path);
+
+        for (auto& file : std::filesystem::directory_iterator(path)) {
+            if (file.path().extension() == ".png") {
+                std::string Key = file.path().stem().string();
+                Textures[Key] = LoadTexture(file.path().c_str());
+            }
+        }
+    }
+}
+
+// Initialize all struct objects with default values
+void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, Texture2D>& Textures) {
     // Player
     PLAYER.isTouching = true;
 
@@ -38,11 +55,11 @@ void initStructs(Player& PLAYER, World& WORLD) {
 
     PLAYER.velocity = 0.0f;
 
-    PLAYER.cube = LoadTexture("../resources/textures/icon1.png");
+    PLAYER.cube = Textures.at("icon1");
     PLAYER.hitbox = {PLAYER.x - (PLAYER.size / 2.0f), PLAYER.y - (PLAYER.size / 2.0f), static_cast<float>(PLAYER.size), static_cast<float>(PLAYER.size)};
 
     // Background and foreground
-    WORLD.ground = LoadTexture("../resources/textures/ground1.png");
+    WORLD.ground = Textures.at("ground1");
     WORLD.x = 0.0f;
     WORLD.y = static_cast<float>(GetScreenHeight() - WORLD.ground.height);
     WORLD.groundMovement = 0;
@@ -63,6 +80,7 @@ void initStructs(Player& PLAYER, World& WORLD) {
     WORLD.groundBox = {WORLD.x, WORLD.y, static_cast<float>(WORLD.ground.width), static_cast<float>(WORLD.ground.height)};
 }
 
+// Handle user inputs
 void handleInputs(Player& PLAYER) {
     if (IsKeyDown(KEY_UP) && PLAYER.isTouching ||
         IsKeyDown(KEY_W) && PLAYER.isTouching ||
@@ -74,6 +92,7 @@ void handleInputs(Player& PLAYER) {
         }
 }
 
+// Check for collisions between objects
 void checkCollisions(Player& PLAYER, World& WORLD) {
     if (CheckCollisionRecs(PLAYER.hitbox, WORLD.groundBox)) {
         PLAYER.isTouching = true;
@@ -83,6 +102,7 @@ void checkCollisions(Player& PLAYER, World& WORLD) {
     }
 }
 
+// Handle player rotation animation
 void handlePlayerRotation(Player& PLAYER) {
 
     if (PLAYER.rotation >= 315 || PLAYER.rotation <= 45) PLAYER.rotation = 0.0f;
@@ -92,6 +112,7 @@ void handlePlayerRotation(Player& PLAYER) {
 
 }
 
+// Update player state
 void updatePlayer(Player& PLAYER) {
     PLAYER.x = static_cast<int>(GetScreenWidth() - GetScreenWidth() + 200);
 
@@ -124,6 +145,7 @@ void updatePlayer(Player& PLAYER) {
     PLAYER.hitbox.x = PLAYER.x - (PLAYER.size / 2.0f);
 }
 
+// Draw background and foreground textures
 void drawBackgroundAndForeground(World& WORLD) {
     WORLD.groundMovement -= WORLD.speed;
 
@@ -133,6 +155,7 @@ void drawBackgroundAndForeground(World& WORLD) {
     DrawTextureEx(WORLD.ground, Vector2({WORLD.ground.width + WORLD.groundMovement, WORLD.y}), 0.0f, 1.0f, WHITE);
 }
 
+// Draw player icon on screen
 void drawPlayer(Player& PLAYER) {
     DrawTexturePro(PLAYER.cube, 
         {0, 0, static_cast<float>(PLAYER.size), static_cast<float>(PLAYER.size)}, 
@@ -142,19 +165,33 @@ void drawPlayer(Player& PLAYER) {
         WHITE);
 }
 
+// Optional: Draws hitboxes for each object in the world
 void drawHitboxes(Player& PLAYER, World& WORLD) {
     DrawRectangleLinesEx(PLAYER.hitbox, 4.0f, RED); // PLAYER HITBOXES
-    DrawRectangleLinesEx(WORLD.groundBox, 4.0f, RED); // GROUND HITBOXES
+    DrawRectangleLinesEx(WORLD.groundBox, 4.0f, GREEN); // GROUND HITBOXES
 }
 
+
+void unloadTextureData(std::unordered_map<std::string, Texture2D>& Textures) {
+    for (auto& [Key, texture] : Textures) {
+        UnloadTexture(texture);
+    }
+}
+
+
+// MAIN
 int main(void)
 {
 
     Player PLAYER;
     World WORLD;
 
+    std::string path = "../resources/textures";
+    std::unordered_map<std::string, Texture2D> Textures;
+
     InitWindow(WIDTH, HEIGHT, WINDOW_TITLE);
-    initStructs(PLAYER, WORLD);
+    loadTextureData(path, Textures);
+    initStructs(PLAYER, WORLD, Textures);
     SetTargetFPS(FRAMERATE);
 
     while (!WindowShouldClose())
@@ -173,9 +210,8 @@ int main(void)
         EndDrawing();
     }
 
+    unloadTextureData(Textures);
     CloseWindow();
-    UnloadTexture(PLAYER.cube);
-    UnloadTexture(WORLD.ground);
 
     return 0;
 }
