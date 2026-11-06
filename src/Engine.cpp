@@ -23,7 +23,21 @@ void initStructs(Player& PLAYER, World& WORLD) {
     PLAYER.x = GetScreenWidth() / 1.75;
     PLAYER.y = GetScreenHeight() - PLAYER.size;
     PLAYER.rotation = 0.0f;
-    PLAYER.jumpPower = static_cast<float>(FRAMERATE) / 3;
+     
+    switch (FRAMERATE) {
+        case 30:
+            PLAYER.jumpPower = 42;
+            break;
+
+        case 60:
+            PLAYER.jumpPower = 22;
+            break;
+
+        case 120:
+            PLAYER.jumpPower = 15;
+            break;
+    }
+
     PLAYER.velocity = 0.0f;
 
     PLAYER.cube = LoadTexture("../resources/textures/icon1.png");
@@ -62,9 +76,7 @@ void handlePlayerRotation(Player& PLAYER) {
     else if (PLAYER.rotation >= 45 && PLAYER.rotation <= 135) PLAYER.rotation = 90.0f;
     else if (PLAYER.rotation >= 135 && PLAYER.rotation <= 225) PLAYER.rotation = 180.0f;
     else if (PLAYER.rotation >= 225 && PLAYER.rotation <= 315) PLAYER.rotation = 270.0f;
-    
 
-    if (PLAYER.rotation >= 360) PLAYER.rotation = 0.0f;
 }
 
 void updatePlayer(Player& PLAYER) {
@@ -72,8 +84,26 @@ void updatePlayer(Player& PLAYER) {
 
     // Update player velocity
     if (!PLAYER.isTouching) {
-        PLAYER.velocity -= 1.1;
-        PLAYER.rotation += 5.0f;
+        
+        // 
+        switch (FRAMERATE) {
+            case 30:
+                PLAYER.velocity -= 4.2f;
+                PLAYER.rotation += 9.5f;
+                break;
+
+            case 60:
+                PLAYER.velocity -= 1.2f;
+                PLAYER.rotation += 5.0f;
+                break;
+
+            case 120:
+                PLAYER.velocity -= 0.5f;
+                PLAYER.rotation += 3.0f;
+                break;
+        }
+
+        if (PLAYER.rotation >= 360) PLAYER.rotation = 0.0f;
     }
     else {
         handlePlayerRotation(PLAYER);
