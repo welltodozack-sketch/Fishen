@@ -1,5 +1,4 @@
 #include "Fishen.hpp"
-#include "raylib.h"
 
 struct Player {
     bool isTouching;
@@ -10,7 +9,7 @@ struct Player {
 };
 
 struct World {
-    float x, y;
+    float x, y, groundMovement, speed;
     Texture2D ground, backGround;
     Rectangle groundBox;
 };
@@ -25,17 +24,16 @@ void initStructs(Player& PLAYER, World& WORLD) {
     PLAYER.rotation = 0.0f;
      
     switch (FRAMERATE) {
-        case 30:
-            PLAYER.jumpPower = 42;
-            break;
-
         case 60:
-            PLAYER.jumpPower = 22;
+            PLAYER.jumpPower = 25;
             break;
 
         case 120:
             PLAYER.jumpPower = 15;
             break;
+
+        default:
+            CloseWindow();
     }
 
     PLAYER.velocity = 0.0f;
@@ -47,6 +45,21 @@ void initStructs(Player& PLAYER, World& WORLD) {
     WORLD.ground = LoadTexture("../resources/textures/ground1.png");
     WORLD.x = 0.0f;
     WORLD.y = static_cast<float>(GetScreenHeight() - WORLD.ground.height);
+    WORLD.groundMovement = 0;
+
+    switch (FRAMERATE) {
+        case 60:
+            WORLD.speed = 10.0f;
+            break;
+
+        case 120:
+            WORLD.speed = 5.0f;
+            break;
+
+        default:
+            CloseWindow();
+    }
+    
     WORLD.groundBox = {WORLD.x, WORLD.y, static_cast<float>(WORLD.ground.width), static_cast<float>(WORLD.ground.height)};
 }
 
@@ -85,22 +98,19 @@ void updatePlayer(Player& PLAYER) {
     // Update player velocity
     if (!PLAYER.isTouching) {
         
-        // 
         switch (FRAMERATE) {
-            case 30:
-                PLAYER.velocity -= 4.2f;
-                PLAYER.rotation += 9.5f;
-                break;
-
             case 60:
-                PLAYER.velocity -= 1.2f;
-                PLAYER.rotation += 5.0f;
+                PLAYER.velocity -= 1.5f;
+                PLAYER.rotation += 5.5f;
                 break;
 
             case 120:
                 PLAYER.velocity -= 0.5f;
                 PLAYER.rotation += 3.0f;
                 break;
+            
+            default:
+                CloseWindow();
         }
 
         if (PLAYER.rotation >= 360) PLAYER.rotation = 0.0f;
@@ -115,7 +125,12 @@ void updatePlayer(Player& PLAYER) {
 }
 
 void drawBackgroundAndForeground(World& WORLD) {
-    DrawTextureEx(WORLD.ground, Vector2({WORLD.x, WORLD.y}), 0.0f, 1.0f, WHITE);
+    WORLD.groundMovement -= WORLD.speed;
+
+    if (WORLD.groundMovement <= -WORLD.ground.width) WORLD.groundMovement = 0;
+
+    DrawTextureEx(WORLD.ground, Vector2({WORLD.groundMovement, WORLD.y}), 0.0f, 1.0f, WHITE);
+    DrawTextureEx(WORLD.ground, Vector2({WORLD.ground.width + WORLD.groundMovement, WORLD.y}), 0.0f, 1.0f, WHITE);
 }
 
 void drawPlayer(Player& PLAYER) {
