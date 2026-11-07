@@ -1,34 +1,4 @@
 #include "Fishen.hpp"
-#include "raylib.h"
-#include <unordered_map>
-
-struct Player {
-    bool isTouching;
-    int size;
-    float x, y, rotation, jumpPower, velocity;
-    Texture2D cube;
-    Rectangle hitbox;
-};
-
-struct World {
-    float x, y, groundMovement, speed;
-    Texture2D ground, backGround;
-    Rectangle groundBox;
-};
-
-void loadTextureData(std::string path, std::unordered_map<std::string, Texture2D>& Textures) {
-    if (std::filesystem::exists(path)) {
-        std::ifstream Data;
-        Data.open(path);
-
-        for (auto& file : std::filesystem::directory_iterator(path)) {
-            if (file.path().extension() == ".png") {
-                std::string Key = file.path().stem().string();
-                Textures[Key] = LoadTexture(file.path().c_str());
-            }
-        }
-    }
-}
 
 // Initialize all struct objects with default values
 void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, Texture2D>& Textures) {
@@ -36,7 +6,7 @@ void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, T
     PLAYER.isTouching = true;
 
     PLAYER.size = 90;
-    PLAYER.x = GetScreenWidth() / 1.75;
+    PLAYER.x = GetScreenWidth() / 3.0f;
     PLAYER.y = GetScreenHeight() - PLAYER.size;
     PLAYER.rotation = 0.0f;
      
@@ -92,16 +62,6 @@ void handleInputs(Player& PLAYER) {
         }
 }
 
-// Check for collisions between objects
-void checkCollisions(Player& PLAYER, World& WORLD) {
-    if (CheckCollisionRecs(PLAYER.hitbox, WORLD.groundBox)) {
-        PLAYER.isTouching = true;
-        PLAYER.y = WORLD.groundBox.y - (PLAYER.size / 2.0f);
-        PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
-        PLAYER.velocity = 0.0f;
-    }
-}
-
 // Handle player rotation animation
 void handlePlayerRotation(Player& PLAYER) {
 
@@ -114,7 +74,6 @@ void handlePlayerRotation(Player& PLAYER) {
 
 // Update player state
 void updatePlayer(Player& PLAYER) {
-    PLAYER.x = static_cast<int>(GetScreenWidth() - GetScreenWidth() + 200);
 
     // Update player velocity
     if (!PLAYER.isTouching) {
@@ -145,36 +104,12 @@ void updatePlayer(Player& PLAYER) {
     PLAYER.hitbox.x = PLAYER.x - (PLAYER.size / 2.0f);
 }
 
-// Draw background and foreground textures
-void drawBackgroundAndForeground(World& WORLD) {
-    WORLD.groundMovement -= WORLD.speed;
-
-    if (WORLD.groundMovement <= -WORLD.ground.width) WORLD.groundMovement = 0;
-
-    DrawTextureEx(WORLD.ground, Vector2({WORLD.groundMovement, WORLD.y}), 0.0f, 1.0f, WHITE);
-    DrawTextureEx(WORLD.ground, Vector2({WORLD.ground.width + WORLD.groundMovement, WORLD.y}), 0.0f, 1.0f, WHITE);
-}
-
-// Draw player icon on screen
-void drawPlayer(Player& PLAYER) {
-    DrawTexturePro(PLAYER.cube, 
-        {0, 0, static_cast<float>(PLAYER.size), static_cast<float>(PLAYER.size)}, 
-        {PLAYER.x, PLAYER.y, static_cast<float>(PLAYER.size), static_cast<float>(PLAYER.size)},
-        Vector2({PLAYER.size / 2.0f, PLAYER.size / 2.0f}),
-        PLAYER.rotation,
-        WHITE);
-}
-
-// Optional: Draws hitboxes for each object in the world
-void drawHitboxes(Player& PLAYER, World& WORLD) {
-    DrawRectangleLinesEx(PLAYER.hitbox, 4.0f, RED); // PLAYER HITBOXES
-    DrawRectangleLinesEx(WORLD.groundBox, 4.0f, GREEN); // GROUND HITBOXES
-}
-
-
-void unloadTextureData(std::unordered_map<std::string, Texture2D>& Textures) {
-    for (auto& [Key, texture] : Textures) {
-        UnloadTexture(texture);
+void checkCollisions(struct Player& PLAYER, struct World& WORLD) {
+    if (CheckCollisionRecs(PLAYER.hitbox, WORLD.groundBox)) {
+        PLAYER.isTouching = true;
+        PLAYER.y = WORLD.groundBox.y - (PLAYER.size / 2.0f);
+        PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
+        PLAYER.velocity = 0.0f;
     }
 }
 

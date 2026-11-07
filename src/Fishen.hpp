@@ -8,6 +8,8 @@
 #include "raylib.h"
 
 // External Files
+#include "drawingHandler.cpp"
+#include "textureLoader.cpp"
 
 // definition
 #define FRAMERATE 120
