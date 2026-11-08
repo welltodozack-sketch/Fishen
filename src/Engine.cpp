@@ -28,6 +28,7 @@ void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, T
 
     PLAYER.cube = Textures.at("icon1");
     PLAYER.hitbox = {PLAYER.x - (PLAYER.size / 2.0f), PLAYER.y - (PLAYER.size / 2.0f), static_cast<float>(PLAYER.size), static_cast<float>(PLAYER.size)};
+    PLAYER.innerBox = {PLAYER.x - (PLAYER.size / 2.0f), PLAYER.y, PLAYER.size / 3.0f, PLAYER.size / 3.0f};
 
     // Background and foreground
     WORLD.ground = Textures.at("ground1");
@@ -49,6 +50,11 @@ void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, T
     }
     
     WORLD.groundBox = {WORLD.x, WORLD.y, static_cast<float>(WORLD.ground.width), static_cast<float>(WORLD.ground.height)};
+}
+
+void onDeath(World& WORLD) {
+    Level = levelResetState;
+    WORLD.groundMovement = 0;
 }
 
 // Handle user inputs
@@ -109,36 +115,95 @@ void updatePlayer(Player& PLAYER) {
     }
 
     PLAYER.y -= PLAYER.velocity;
+    
     PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
     PLAYER.hitbox.x = PLAYER.x - (PLAYER.size / 2.0f);
+
+    PLAYER.innerBox.y = PLAYER.y - (PLAYER.size / 2.0f) + (PLAYER.size / 3.0f);
+    PLAYER.innerBox.x = PLAYER.x - (PLAYER.size / 2.0f) + (PLAYER.size / 3.0f);
 }
 
 
 // handle collision checks
-void checkCollisions(struct Player& PLAYER, struct World& WORLD) {
+
+// handle collision checks
+void checkCollisions(Player& PLAYER, World& WORLD) {
 
     bool collided = false;
-    
-    // Check if player touches the ground
+
+    // Capture velocity before collision detection zeroes it
+    const float vel = PLAYER.velocity;
+
     if (CheckCollisionRecs(PLAYER.hitbox, WORLD.groundBox)) {
         collided = true;
-        PLAYER.y = WORLD.groundBox.y - (PLAYER.size / 2.0f) + 1;
-        PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
+        PLAYER.y = WORLD.groundBox.y - PLAYER.size / 2.0f + 0.5f;
+        PLAYER.hitbox.y = PLAYER.y - PLAYER.size / 2.0f;
+        PLAYER.innerBox.y = PLAYER.y - PLAYER.size / 2.0f + PLAYER.size / 3.0f;
         PLAYER.velocity = 0.0f;
     }
-    
+
     for (auto& object : Level) {
-        if (CheckCollisionRecs(PLAYER.hitbox, object.hitbox)) {
+        if (!CheckCollisionRecs(PLAYER.hitbox, object.hitbox)) continue; // Iterate through objects
+
+        float bottomOfPlayer = PLAYER.hitbox.y + PLAYER.hitbox.height;
+        float prevBottom = bottomOfPlayer + vel;
+
+        // Detrmine landing value   
+        bool landing = (vel <= 0.0f) && (prevBottom <= object.hitbox.y + 1.0f);
+
+        if (object.type != 0 || landing) {
             collided = true;
-            PLAYER.y = object.hitbox.y - (PLAYER.size / 2.0f) + 1;
-            PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
+            PLAYER.y = object.hitbox.y - PLAYER.size / 2.0f + 0.5f;
+            PLAYER.hitbox.y = PLAYER.y - PLAYER.size / 2.0f;
+            PLAYER.innerBox.y = PLAYER.y - PLAYER.size / 2.0f + PLAYER.size / 3.0f;
             PLAYER.velocity = 0.0f;
+        }
+
+        else if (CheckCollisionRecs(PLAYER.innerBox, object.hitbox)) {
+            onDeath(WORLD);
+            break; // stop iterating - reset level
         }
     }
 
     PLAYER.isTouching = collided;
 }
 
+/*
+void checkCollisions(struct Player& PLAYER, struct World& WORLD) {
+
+    bool collided = false;
+
+    if (CheckCollisionRecs(PLAYER.hitbox, WORLD.groundBox)) {
+            collided = true;
+            PLAYER.y = WORLD.groundBox.y - PLAYER.size / 2.0f + 0.5f;
+            PLAYER.hitbox.y = PLAYER.y - PLAYER.size / 2.0f;
+            PLAYER.innerBox.y = PLAYER.y - PLAYER.size / 2.0f + PLAYER.size / 3.0f;
+            PLAYER.velocity = 0.0f;   
+    }
+    
+    for (auto& object : Level) {
+        if (CheckCollisionRecs(PLAYER.hitbox, object.hitbox)) {
+
+            if (PLAYER.y > object.hitbox.y + (object.hitbox.height / 5.0f) && object.type == 0) {
+                if (CheckCollisionRecs(PLAYER.innerBox, object.hitbox)) {
+                    onDeath(WORLD);
+                }
+            }
+            else {
+                collided = true;
+                PLAYER.y = object.hitbox.y - PLAYER.size / 2.0f + 0.5f;
+                PLAYER.hitbox.y = PLAYER.y - PLAYER.size / 2.0f;
+                PLAYER.innerBox.y = PLAYER.y - PLAYER.size / 2.0f + PLAYER.size / 3.0f;
+                PLAYER.velocity = 0.0f;
+            }
+        }
+    }
+
+    PLAYER.isTouching = collided;
+
+}
+
+*/
 
 // MAIN
 int main(void)
@@ -152,17 +217,19 @@ int main(void)
     std::unordered_map<std::string, Texture2D> Textures;
 
     InitWindow(WIDTH, HEIGHT, WINDOW_TITLE);
-    // Load game data
+    SetTargetFPS(FRAMERATE);
+    
+    // Load game data and initialize
     loadTextureData(path, Textures);
     loadLevelFromFile(levelPath, Textures);
     initStructs(PLAYER, WORLD, Textures);
-    SetTargetFPS(FRAMERATE);
 
+    // Game loop
     while (!WindowShouldClose())
     {
 
         if (IsKeyPressed(KEY_R)) {
-            Level = levelResetState;
+            onDeath(WORLD);
         }
 
         // Background checks

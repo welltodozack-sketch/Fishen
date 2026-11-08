@@ -1,3 +1,7 @@
+#include <cctype>
+#include <codecvt>
+#include <cstring>
+#include <forward_list>
 #include <iostream>
 #include <filesystem>
 #include <unordered_map>
@@ -9,6 +13,7 @@
 
 struct levelObject {
     Texture2D texture;
+    int type;
     float x;
     float y;
     Rectangle hitbox;
@@ -16,9 +21,27 @@ struct levelObject {
 std::vector<levelObject> Level;
 std::vector<levelObject> levelResetState;
 
-void assignHitboxToObject(std::unordered_map<std::string, Texture2D>& Textures, std::string& object, float& x, float& y, Rectangle& hitbox, Texture2D& textureData) {
+
+void assignTypeToObject(std::string& object, int& type) {
+    std::string forEachCharacter;
+
+    for (int i = 0; i < strlen(object.c_str()); ++i) {
+        if (!std::isdigit(object[i])) {
+            forEachCharacter += object[i];
+        }
+        else {
+            break;
+        } 
+    }
+
+    if (forEachCharacter == "block") {
+        type = 0;
+    }
+}
+
+void assignHitboxToObject(std::unordered_map<std::string, Texture2D>& Textures, int& type, float& x, float& y, Rectangle& hitbox, Texture2D& textureData) {
     
-    if (object == "block1") {
+    if (type == 0) {
         hitbox = {x,
             y,
             static_cast<float>(textureData.width),
@@ -31,6 +54,7 @@ void assignHitboxToObject(std::unordered_map<std::string, Texture2D>& Textures, 
 void loadLevelFromFile(const std::string& path, std::unordered_map<std::string, Texture2D>& Textures) {
     if (std::filesystem::exists(path)) {
         std::string object;
+        int type;
         float x;
         float y;
         Rectangle hitbox;
@@ -41,8 +65,11 @@ void loadLevelFromFile(const std::string& path, std::unordered_map<std::string, 
         while(readFromFile >> object >> x >> y) {
             Texture2D textureData = Textures.at(object); 
             y = static_cast<float>(GetScreenHeight()) - Textures.at("ground1").height - textureData.height - y;
-            assignHitboxToObject(Textures, object, x, y, hitbox, textureData);
-            Level.push_back({Textures.at(object), x, y, hitbox});
+            // Assign specific values
+            assignTypeToObject(object, type);
+            assignHitboxToObject(Textures, type, x, y, hitbox, textureData);
+            // Push complete level data back
+            Level.push_back({Textures.at(object), type, x, y, hitbox});
 
             object = "";
             x = 0;
