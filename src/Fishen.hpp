@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <unordered_map>
 #include <fstream>
+#include <vector>
 
 // Dependency library
 #include "raylib.h"

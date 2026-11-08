@@ -1,11 +1,12 @@
 #include "Fishen.hpp"
+#include "raylib.h"
 
 // Initialize all struct objects with default values
 void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, Texture2D>& Textures) {
     // Player
-    PLAYER.isTouching = true;
+    PLAYER.isTouching = false;
 
-    PLAYER.size = 90;
+    PLAYER.size = 100;
     PLAYER.x = GetScreenWidth() / 3.0f;
     PLAYER.y = GetScreenHeight() - PLAYER.size;
     PLAYER.rotation = 0.0f;
@@ -72,6 +73,14 @@ void handlePlayerRotation(Player& PLAYER) {
 
 }
 
+// Update all stored level objects position
+void updateGlobalObjectPosition(World& WORLD) {
+    for (auto& object : Level) {
+        object.x -= WORLD.speed;
+        object.hitbox.x = object.x;
+    }
+}
+
 // Update player state
 void updatePlayer(Player& PLAYER) {
 
@@ -104,13 +113,30 @@ void updatePlayer(Player& PLAYER) {
     PLAYER.hitbox.x = PLAYER.x - (PLAYER.size / 2.0f);
 }
 
+
+// handle collision checks
 void checkCollisions(struct Player& PLAYER, struct World& WORLD) {
+
+    bool collided = false;
+    
+    // Check if player touches the ground
     if (CheckCollisionRecs(PLAYER.hitbox, WORLD.groundBox)) {
-        PLAYER.isTouching = true;
-        PLAYER.y = WORLD.groundBox.y - (PLAYER.size / 2.0f);
+        collided = true;
+        PLAYER.y = WORLD.groundBox.y - (PLAYER.size / 2.0f) + 1;
         PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
         PLAYER.velocity = 0.0f;
     }
+    
+    for (auto& object : Level) {
+        if (CheckCollisionRecs(PLAYER.hitbox, object.hitbox)) {
+            collided = true;
+            PLAYER.y = object.hitbox.y - (PLAYER.size / 2.0f) + 1;
+            PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
+            PLAYER.velocity = 0.0f;
+        }
+    }
+
+    PLAYER.isTouching = collided;
 }
 
 
@@ -122,26 +148,33 @@ int main(void)
     World WORLD;
 
     std::string path = "../resources/textures";
+    std::string levelPath = "../resources/levels/level1.txt";
     std::unordered_map<std::string, Texture2D> Textures;
 
     InitWindow(WIDTH, HEIGHT, WINDOW_TITLE);
+    // Load game data
     loadTextureData(path, Textures);
+    loadLevelFromFile(levelPath, Textures);
     initStructs(PLAYER, WORLD, Textures);
     SetTargetFPS(FRAMERATE);
 
     while (!WindowShouldClose())
     {
+
+        if (IsKeyPressed(KEY_R)) {
+            Level = levelResetState;
+        }
+
         // Background checks
         handleInputs(PLAYER);
+        updateGlobalObjectPosition(WORLD);
         updatePlayer(PLAYER);
         checkCollisions(PLAYER, WORLD);
 
         // Update frames
         BeginDrawing();
             ClearBackground(BLACK);
-            drawBackgroundAndForeground(WORLD);
-            drawPlayer(PLAYER);
-            // drawHitboxes(PLAYER, WORLD);
+            drawOnScreen(Textures, PLAYER, WORLD);
         EndDrawing();
     }
 

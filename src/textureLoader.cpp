@@ -17,6 +17,8 @@ void loadTextureData(std::string path, std::unordered_map<std::string, Texture2D
                 Textures[Key] = LoadTexture(file.path().c_str());
             }
         }
+
+        Data.close();
     }
 }
 
