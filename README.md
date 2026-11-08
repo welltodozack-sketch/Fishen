@@ -100,7 +100,7 @@ mkdir build ; cd build
 cmake ..
 ```
 
-If all is done correctly, it should start building the files (The build output is too long to past, it should return 0 if successful). When it finishes building, run this command to generate an executable of the program:
+If all is done correctly, it should start building the files (The build output is too long to paste, it should return 0 if successful). When it finishes building, run this command to generate an executable of the program:
 
 ```cmake
 cmake --build .
