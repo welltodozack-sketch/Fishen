@@ -27,8 +27,10 @@ struct World {
     float x;
     float y;
     float groundMovement;
+    float backgroundMovement;
     float speed;
-    Texture2D ground, backGround;
+    Texture2D ground; 
+    Texture2D backGround;
     Rectangle groundBox;
 };
 
@@ -45,13 +47,19 @@ void drawPlayer(Player& PLAYER) {
 // Draw background and foreground textures
 void drawTextures(World& WORLD, Player& PLAYER, std::unordered_map<std::string, Texture2D>& Textures) {
     WORLD.groundMovement -= WORLD.speed;
+    WORLD.backgroundMovement -= WORLD.speed;
 
     if (WORLD.groundMovement <= -WORLD.ground.width) WORLD.groundMovement = 0;
+    if (WORLD.backgroundMovement <= WORLD.backGround.width) WORLD.backgroundMovement = 0;
+
+    DrawTextureEx(WORLD.backGround, Vector2({WORLD.backgroundMovement, -100}), 0.0f, 1.0f, WHITE);
+    DrawTextureEx(WORLD.backGround, Vector2({WORLD.backGround.width + WORLD.backgroundMovement, -100}), 0.0f, 1.0f, WHITE);
 
     drawPlayer(PLAYER); // Draw player icon
-
     for (auto& object : Level) {
-        DrawTextureEx(object.texture, Vector2({object.x, object.y}), 0.0f, 1.0f, WHITE);
+        if (object.x <= GetScreenWidth() + object.texture.width && object.x >= 0 - object.texture.width) {
+            DrawTextureEx(object.texture, Vector2({object.x, object.y}), 0.0f, 1.0f, WHITE);
+        }
     }
 
     DrawTextureEx(WORLD.ground, Vector2({WORLD.groundMovement, WORLD.y}), 0.0f, 1.0f, WHITE);

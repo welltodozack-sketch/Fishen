@@ -13,7 +13,7 @@ void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, T
      
     switch (FRAMERATE) {
         case 60:
-            PLAYER.jumpPower = 25;
+            PLAYER.jumpPower = 30;
             break;
 
         case 120:
@@ -32,9 +32,11 @@ void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, T
 
     // Background and foreground
     WORLD.ground = Textures.at("ground1");
+    WORLD.backGround = Textures.at("background1");
     WORLD.x = 0.0f;
     WORLD.y = static_cast<float>(GetScreenHeight() - WORLD.ground.height);
     WORLD.groundMovement = 0;
+    WORLD.backgroundMovement = 0;
 
     switch (FRAMERATE) {
         case 60:
@@ -52,9 +54,13 @@ void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, T
     WORLD.groundBox = {WORLD.x, WORLD.y, static_cast<float>(WORLD.ground.width), static_cast<float>(WORLD.ground.height)};
 }
 
-void onDeath(World& WORLD) {
+void onDeath(World& WORLD, Player& PLAYER) {
     Level = levelResetState;
     WORLD.groundMovement = 0;
+    WORLD.backgroundMovement = 0;
+
+    PLAYER.x = GetScreenWidth() / 3.0f;
+    PLAYER.y = GetScreenHeight() - PLAYER.size;
 }
 
 // Handle user inputs
@@ -95,13 +101,13 @@ void updatePlayer(Player& PLAYER) {
         
         switch (FRAMERATE) {
             case 60:
-                PLAYER.velocity -= 1.5f;
-                PLAYER.rotation += 5.5f;
+                PLAYER.velocity -= 2.0f;
+                PLAYER.rotation += 6.25f;
                 break;
 
             case 120:
                 PLAYER.velocity -= 0.5f;
-                PLAYER.rotation += 3.0f;
+                PLAYER.rotation += 3.075f;
                 break;
             
             default:
@@ -136,31 +142,34 @@ void checkCollisions(Player& PLAYER, World& WORLD) {
 
     if (CheckCollisionRecs(PLAYER.hitbox, WORLD.groundBox)) {
         collided = true;
-        PLAYER.y = WORLD.groundBox.y - PLAYER.size / 2.0f + 0.5f;
-        PLAYER.hitbox.y = PLAYER.y - PLAYER.size / 2.0f;
-        PLAYER.innerBox.y = PLAYER.y - PLAYER.size / 2.0f + PLAYER.size / 3.0f;
+        PLAYER.y = WORLD.groundBox.y - (PLAYER.size / 2.0f) + 0.5f;
+        PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
+        PLAYER.innerBox.y = PLAYER.y - (PLAYER.size / 2.0f) + (PLAYER.size / 3.0f);
         PLAYER.velocity = 0.0f;
     }
 
     for (auto& object : Level) {
         if (!CheckCollisionRecs(PLAYER.hitbox, object.hitbox)) continue; // Iterate through objects
 
+        // Get bottom of player hitbox and previous position
         float bottomOfPlayer = PLAYER.hitbox.y + PLAYER.hitbox.height;
-        float prevBottom = bottomOfPlayer + vel;
+        float previousBottom = bottomOfPlayer + vel;
 
-        // Detrmine landing value   
-        bool landing = (vel <= 0.0f) && (prevBottom <= object.hitbox.y + 1.0f);
+        // Determine if the player is falling down && if previous y is higher than the top of the block
+        bool landing = (vel <= 0.0f) && (previousBottom <= object.hitbox.y + 1.0f);
 
-        if (object.type != 0 || landing) {
+        // If the player is above the block
+        if (object.type == 0 && landing) {
             collided = true;
-            PLAYER.y = object.hitbox.y - PLAYER.size / 2.0f + 0.5f;
-            PLAYER.hitbox.y = PLAYER.y - PLAYER.size / 2.0f;
-            PLAYER.innerBox.y = PLAYER.y - PLAYER.size / 2.0f + PLAYER.size / 3.0f;
+            PLAYER.y = object.hitbox.y - (PLAYER.size / 2.0f) + 0.5f;
+            PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
+            PLAYER.innerBox.y = PLAYER.y - (PLAYER.size / 2.0f) + (PLAYER.size / 3.0f);
             PLAYER.velocity = 0.0f;
         }
 
+        // Else check for collision with the inner box (if the player is bellow the top of the block)
         else if (CheckCollisionRecs(PLAYER.innerBox, object.hitbox)) {
-            onDeath(WORLD);
+            onDeath(WORLD, PLAYER);
             break; // stop iterating - reset level
         }
     }
@@ -229,7 +238,7 @@ int main(void)
     {
 
         if (IsKeyPressed(KEY_R)) {
-            onDeath(WORLD);
+            onDeath(WORLD, PLAYER);
         }
 
         // Background checks
