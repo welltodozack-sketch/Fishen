@@ -7,6 +7,7 @@
 
 // Dependency library
 #include "raylib.h"
+#include "raymath.h"
 
 // External Files
 #include "drawingHandler.cpp"

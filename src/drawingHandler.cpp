@@ -47,10 +47,10 @@ void drawPlayer(Player& PLAYER) {
 // Draw background and foreground textures
 void drawTextures(World& WORLD, Player& PLAYER, std::unordered_map<std::string, Texture2D>& Textures) {
     WORLD.groundMovement -= WORLD.speed;
-    WORLD.backgroundMovement -= WORLD.speed;
+    WORLD.backgroundMovement -= WORLD.speed / 3.0f;
 
     if (WORLD.groundMovement <= -WORLD.ground.width) WORLD.groundMovement = 0;
-    if (WORLD.backgroundMovement <= WORLD.backGround.width) WORLD.backgroundMovement = 0;
+    if (WORLD.backgroundMovement <= -WORLD.backGround.width) WORLD.backgroundMovement = 0;
 
     DrawTextureEx(WORLD.backGround, Vector2({WORLD.backgroundMovement, -100}), 0.0f, 1.0f, WHITE);
     DrawTextureEx(WORLD.backGround, Vector2({WORLD.backGround.width + WORLD.backgroundMovement, -100}), 0.0f, 1.0f, WHITE);
@@ -71,7 +71,7 @@ void drawTextures(World& WORLD, Player& PLAYER, std::unordered_map<std::string, 
 void drawHitboxes(Player& PLAYER, World& WORLD) {
     DrawRectangleLinesEx(PLAYER.hitbox, 4.0f, RED); // PLAYER HITBOXES
     DrawRectangleLinesEx(PLAYER.innerBox, 4.0f, BLUE); // PLAYER HITBOXES
-    DrawRectangleLinesEx(WORLD.groundBox, 4.0f, GREEN); // GROUND HITBOXES
+    // DrawRectangleLinesEx(WORLD.groundBox, 4.0f, GREEN); // GROUND HITBOXES
 
     for (auto& object : Level) {
         DrawRectangleLinesEx(object.hitbox, 4.0f, BLUE);

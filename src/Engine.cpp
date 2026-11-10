@@ -1,5 +1,8 @@
 #include "Fishen.hpp"
 #include "raylib.h"
+#include <chrono>
+#include <thread>
+#include <unistd.h>
 
 // Initialize all struct objects with default values
 void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, Texture2D>& Textures) {
@@ -54,13 +57,19 @@ void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, T
     WORLD.groundBox = {WORLD.x, WORLD.y, static_cast<float>(WORLD.ground.width), static_cast<float>(WORLD.ground.height)};
 }
 
-void onDeath(World& WORLD, Player& PLAYER) {
+void onDeath(World& WORLD, Player& PLAYER, bool isInputTriggered) {
     Level = levelResetState;
     WORLD.groundMovement = 0;
     WORLD.backgroundMovement = 0;
 
     PLAYER.x = GetScreenWidth() / 3.0f;
     PLAYER.y = GetScreenHeight() - PLAYER.size;
+    PLAYER.rotation = 0.0f;
+
+    if (isInputTriggered) {
+        return;
+    }
+    else std::this_thread::sleep_for(std::chrono::milliseconds(750));
 }
 
 // Handle user inputs
@@ -169,8 +178,8 @@ void checkCollisions(Player& PLAYER, World& WORLD) {
 
         // Else check for collision with the inner box (if the player is bellow the top of the block)
         else if (CheckCollisionRecs(PLAYER.innerBox, object.hitbox)) {
-            onDeath(WORLD, PLAYER);
-            break; // stop iterating - reset level
+            onDeath(WORLD, PLAYER, false);
+            return; // stop iterating - reset level
         }
     }
 
@@ -238,7 +247,7 @@ int main(void)
     {
 
         if (IsKeyPressed(KEY_R)) {
-            onDeath(WORLD, PLAYER);
+            onDeath(WORLD, PLAYER, true);
         }
 
         // Background checks
