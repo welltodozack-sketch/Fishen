@@ -1,8 +1,5 @@
-#include <iostream>
-#include <filesystem>
+// System libraries
 #include <unordered_map>
-#include <fstream>
-#include <vector>
 
 // Dependency library
 #include "raylib.h"
@@ -74,7 +71,27 @@ void drawHitboxes(Player& PLAYER, World& WORLD) {
     // DrawRectangleLinesEx(WORLD.groundBox, 4.0f, GREEN); // GROUND HITBOXES
 
     for (auto& object : Level) {
-        DrawRectangleLinesEx(object.hitbox, 4.0f, BLUE);
+
+        switch (object.type)
+        {
+        case 0:
+            DrawRectangleLinesEx(object.hitbox, 4.0f, BLUE);
+            break;
+        
+            case 1:
+            DrawRectangleLinesEx(object.hitbox, 4.0f, RED);
+            break;
+        
+        default:
+            break;
+        }
+
+        // if (object.type == 0) {
+        //     DrawRectangleLinesEx(object.hitbox, 4.0f, BLUE);
+        // }
+        // else if (object.type == 1) {
+        //     DrawRectangleLinesEx(object.hitbox, 4.0f, BLUE);
+        // }
     }
 }
 
@@ -82,5 +99,5 @@ void drawHitboxes(Player& PLAYER, World& WORLD) {
 // Draw Everything on screen in order (Order is VERY IMPORTANT!)
 void drawOnScreen(std::unordered_map<std::string, Texture2D>& Textures, Player& PLAYER, World& WORLD) {
     drawTextures(WORLD, PLAYER, Textures); // Draw textures on screen
-    // drawHitboxes(PLAYER, WORLD); // Draw all world hitboxes
+    drawHitboxes(PLAYER, WORLD); // Draw all world hitboxes
 };

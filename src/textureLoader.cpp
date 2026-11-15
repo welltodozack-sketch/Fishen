@@ -1,4 +1,4 @@
-#include <iostream>
+// System libraries
 #include <filesystem>
 #include <unordered_map>
 #include <fstream>
@@ -14,7 +14,7 @@ void loadTextureData(std::string path, std::unordered_map<std::string, Texture2D
         for (auto& file : std::filesystem::directory_iterator(path)) {
             if (file.path().extension() == ".png") {
                 std::string Key = file.path().stem().string();
-                Textures[Key] = LoadTexture(file.path().c_str());
+                Textures[Key] = LoadTexture(file.path().string().c_str());
             }
         }
 

@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include <fstream>
 #include <vector>
+#include <chrono>
+#include <thread>
 
 // Dependency library
 #include "raylib.h"

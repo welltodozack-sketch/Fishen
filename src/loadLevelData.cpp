@@ -1,7 +1,6 @@
+// System libraries
 #include <cctype>
-#include <codecvt>
 #include <cstring>
-#include <forward_list>
 #include <iostream>
 #include <filesystem>
 #include <unordered_map>
@@ -37,6 +36,9 @@ void assignTypeToObject(std::string& object, int& type) {
     if (forEachCharacter == "block") {
         type = 0;
     }
+    else if (forEachCharacter == "spike") {
+        type = 1;
+    }
 }
 
 void assignHitboxToObject(std::unordered_map<std::string, Texture2D>& Textures, int& type, float& x, float& y, Rectangle& hitbox, Texture2D& textureData) {
@@ -46,6 +48,13 @@ void assignHitboxToObject(std::unordered_map<std::string, Texture2D>& Textures, 
             y,
             static_cast<float>(textureData.width),
             static_cast<float>(textureData.height)
+        };
+    }
+    else if (type == 1) {
+        hitbox = {x + (textureData.width / 3.0f),
+            y + (textureData.height / 4.0f),
+            static_cast<float>(textureData.width / 3),
+            static_cast<float>(textureData.height / 1.5)
         };
     }
 }

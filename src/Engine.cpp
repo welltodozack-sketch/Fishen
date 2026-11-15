@@ -1,8 +1,5 @@
+// Header
 #include "Fishen.hpp"
-#include "raylib.h"
-#include <chrono>
-#include <thread>
-#include <unistd.h>
 
 // Initialize all struct objects with default values
 void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, Texture2D>& Textures) {
@@ -97,8 +94,22 @@ void handlePlayerRotation(Player& PLAYER) {
 // Update all stored level objects position
 void updateGlobalObjectPosition(World& WORLD) {
     for (auto& object : Level) {
-        object.x -= WORLD.speed;
-        object.hitbox.x = object.x;
+        switch (object.type)
+        {
+        case 0:
+            object.x -= WORLD.speed;
+            object.hitbox.x = object.x;
+            break;
+        
+        case 1:
+            object.x -= WORLD.speed;
+            object.hitbox.x = object.x + (object.texture.width / 3.0f);
+            object.hitbox.y = object.y + (object.texture.height / 4.0f);
+            break;
+
+        default:
+            break;
+        }
     }
 }
 
@@ -140,8 +151,6 @@ void updatePlayer(Player& PLAYER) {
 
 
 // handle collision checks
-
-// handle collision checks
 void checkCollisions(Player& PLAYER, World& WORLD) {
 
     bool collided = false;
@@ -174,6 +183,9 @@ void checkCollisions(Player& PLAYER, World& WORLD) {
             PLAYER.hitbox.y = PLAYER.y - (PLAYER.size / 2.0f);
             PLAYER.innerBox.y = PLAYER.y - (PLAYER.size / 2.0f) + (PLAYER.size / 3.0f);
             PLAYER.velocity = 0.0f;
+        }
+        else if (object.type == 1) {
+            onDeath(WORLD, PLAYER, false);
         }
 
         // Else check for collision with the inner box (if the player is bellow the top of the block)
@@ -220,7 +232,6 @@ void checkCollisions(struct Player& PLAYER, struct World& WORLD) {
     PLAYER.isTouching = collided;
 
 }
-
 */
 
 // MAIN
