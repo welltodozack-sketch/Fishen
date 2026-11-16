@@ -94,8 +94,7 @@ void handlePlayerRotation(Player& PLAYER) {
 // Update all stored level objects position
 void updateGlobalObjectPosition(World& WORLD) {
     for (auto& object : Level) {
-        switch (object.type)
-        {
+        switch (object.type) {
         case 0:
             object.x -= WORLD.speed;
             object.hitbox.x = object.x;
@@ -184,14 +183,14 @@ void checkCollisions(Player& PLAYER, World& WORLD) {
             PLAYER.innerBox.y = PLAYER.y - (PLAYER.size / 2.0f) + (PLAYER.size / 3.0f);
             PLAYER.velocity = 0.0f;
         }
-        else if (object.type == 1) {
-            onDeath(WORLD, PLAYER, false);
-        }
-
         // Else check for collision with the inner box (if the player is bellow the top of the block)
         else if (CheckCollisionRecs(PLAYER.innerBox, object.hitbox)) {
             onDeath(WORLD, PLAYER, false);
             return; // stop iterating - reset level
+        }
+        // Check for spike collisions
+        else if (object.type == 1) {
+            onDeath(WORLD, PLAYER, false);
         }
     }
 

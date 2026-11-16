@@ -1,5 +1,4 @@
 // System libraries
-#include <cctype>
 #include <cstring>
 #include <iostream>
 #include <filesystem>

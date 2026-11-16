@@ -72,8 +72,7 @@ void drawHitboxes(Player& PLAYER, World& WORLD) {
 
     for (auto& object : Level) {
 
-        switch (object.type)
-        {
+        switch (object.type) {
         case 0:
             DrawRectangleLinesEx(object.hitbox, 4.0f, BLUE);
             break;
