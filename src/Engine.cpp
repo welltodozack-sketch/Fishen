@@ -1,8 +1,9 @@
 // Header
 #include "Fishen.hpp"
+#include "raylib.h"
 
 // Initialize all struct objects with default values
-void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, Texture2D>& Textures) {
+void initStructs(Player& PLAYER, World& WORLD, Menu& MENU, std::unordered_map<std::string, Texture2D>& Textures) {
     // Player
     PLAYER.isTouching = false;
 
@@ -52,6 +53,9 @@ void initStructs(Player& PLAYER, World& WORLD, std::unordered_map<std::string, T
     }
     
     WORLD.groundBox = {WORLD.x, WORLD.y, static_cast<float>(WORLD.ground.width), static_cast<float>(WORLD.ground.height)};
+    
+    // Main Menu
+    MENU.isActive = false;
 }
 
 void onDeath(World& WORLD, Player& PLAYER, bool isInputTriggered) {
@@ -93,6 +97,14 @@ void handlePlayerRotation(Player& PLAYER) {
 
 // Update all stored level objects position
 void updateGlobalObjectPosition(World& WORLD) {
+    // Update world movement && reset
+    WORLD.groundMovement -= WORLD.speed;
+    WORLD.backgroundMovement -= WORLD.speed / 3.0f;
+
+    if (WORLD.groundMovement <= -WORLD.ground.width) WORLD.groundMovement = 0;
+    if (WORLD.backgroundMovement <= -WORLD.backGround.width) WORLD.backgroundMovement = 0;
+
+    // Update object position relative to world speed
     for (auto& object : Level) {
         switch (object.type) {
         case 0:
@@ -239,6 +251,7 @@ int main(void)
 
     Player PLAYER;
     World WORLD;
+    Menu MENU;
 
     std::string path = "../resources/textures";
     std::string levelPath = "../resources/levels/level1.txt";
@@ -246,30 +259,33 @@ int main(void)
 
     InitWindow(WIDTH, HEIGHT, WINDOW_TITLE);
     SetTargetFPS(FRAMERATE);
+    SetExitKey(KEY_BACKSPACE);
     
     // Load game data and initialize
     loadTextureData(path, Textures);
     loadLevelFromFile(levelPath, Textures);
-    initStructs(PLAYER, WORLD, Textures);
+    initStructs(PLAYER, WORLD, MENU, Textures);
 
     // Game loop
-    while (!WindowShouldClose())
-    {
-
-        if (IsKeyPressed(KEY_R)) {
-            onDeath(WORLD, PLAYER, true);
+    while (!WindowShouldClose()) {   
+        if (IsKeyPressed(KEY_ESCAPE)) {
+            MENU.isActive = !MENU.isActive;
         }
 
-        // Background checks
-        handleInputs(PLAYER);
-        updateGlobalObjectPosition(WORLD);
-        updatePlayer(PLAYER);
-        checkCollisions(PLAYER, WORLD);
+        if (!MENU.isActive) {
+            if (IsKeyPressed(KEY_R)) {
+                onDeath(WORLD, PLAYER, true);
+            }
+            // Background checks
+            handleInputs(PLAYER);
+            updateGlobalObjectPosition(WORLD);
+            updatePlayer(PLAYER);
+            checkCollisions(PLAYER, WORLD);
+        }
 
         // Update frames
         BeginDrawing();
-            ClearBackground(BLACK);
-            drawOnScreen(Textures, PLAYER, WORLD);
+            drawOnScreen(Textures, PLAYER, WORLD, MENU);
         EndDrawing();
     }
 

@@ -31,6 +31,10 @@ struct World {
     Rectangle groundBox;
 };
 
+struct Menu {
+    bool isActive;
+};
+
 // Draw player icon on screen
 void drawPlayer(Player& PLAYER) {
     DrawTexturePro(PLAYER.cube, 
@@ -43,11 +47,6 @@ void drawPlayer(Player& PLAYER) {
 
 // Draw background and foreground textures
 void drawTextures(World& WORLD, Player& PLAYER, std::unordered_map<std::string, Texture2D>& Textures) {
-    WORLD.groundMovement -= WORLD.speed;
-    WORLD.backgroundMovement -= WORLD.speed / 3.0f;
-
-    if (WORLD.groundMovement <= -WORLD.ground.width) WORLD.groundMovement = 0;
-    if (WORLD.backgroundMovement <= -WORLD.backGround.width) WORLD.backgroundMovement = 0;
 
     DrawTextureEx(WORLD.backGround, Vector2({WORLD.backgroundMovement, -100}), 0.0f, 1.0f, WHITE);
     DrawTextureEx(WORLD.backGround, Vector2({WORLD.backGround.width + WORLD.backgroundMovement, -100}), 0.0f, 1.0f, WHITE);
@@ -94,9 +93,18 @@ void drawHitboxes(Player& PLAYER, World& WORLD) {
     }
 }
 
+void drawPauseMenu(std::unordered_map<std::string, Texture2D>& Textures) {
+    DrawTextureEx(Textures.at("pauseMenu"), 
+        Vector2({0, 0}), 
+        0.0f,
+        1.0f,
+        WHITE);
+}
+
 
 // Draw Everything on screen in order (Order is VERY IMPORTANT!)
-void drawOnScreen(std::unordered_map<std::string, Texture2D>& Textures, Player& PLAYER, World& WORLD) {
+void drawOnScreen(std::unordered_map<std::string, Texture2D>& Textures, Player& PLAYER, World& WORLD, Menu& MENU) {
     drawTextures(WORLD, PLAYER, Textures); // Draw textures on screen
-    drawHitboxes(PLAYER, WORLD); // Draw all world hitboxes
+    // drawHitboxes(PLAYER, WORLD); // Draw all world hitboxes
+    if (MENU.isActive) drawPauseMenu(Textures);
 };
