@@ -200,10 +200,11 @@ void checkCollisions(Player& PLAYER, World& WORLD) {
             onDeath(WORLD, PLAYER, false);
             return; // stop iterating - reset level
         }
-        // Check for spike collisions
-        else if (object.type == 1) {
+
+        if (object.type == 1) {
             onDeath(WORLD, PLAYER, false);
         }
+        // Check for spike collisions
     }
 
     PLAYER.isTouching = collided;

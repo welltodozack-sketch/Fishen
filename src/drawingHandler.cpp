@@ -94,8 +94,18 @@ void drawHitboxes(Player& PLAYER, World& WORLD) {
 }
 
 void drawPauseMenu(std::unordered_map<std::string, Texture2D>& Textures) {
-    DrawTextureEx(Textures.at("pauseMenu"), 
+    static Texture2D pauseMenuTexture = Textures.at("pauseMenu");
+    static Texture2D continueButtonTexture = Textures.at("continueButton");
+    // Pause menu texture
+    DrawTextureEx(pauseMenuTexture, 
         Vector2({0, 0}), 
+        0.0f,
+        1.0f,
+        WHITE);
+    
+    // continue button
+    DrawTextureEx(continueButtonTexture, 
+        (Vector2){GetScreenWidth()/2.0f - (continueButtonTexture.width/2.0f), GetScreenHeight()/2.0f - (continueButtonTexture.width/2.5f)}, 
         0.0f,
         1.0f,
         WHITE);

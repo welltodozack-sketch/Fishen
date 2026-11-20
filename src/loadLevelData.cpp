@@ -50,10 +50,10 @@ void assignHitboxToObject(std::unordered_map<std::string, Texture2D>& Textures, 
         };
     }
     else if (type == 1) {
-        hitbox = {x + (textureData.width / 3.0f),
-            y + (textureData.height / 4.0f),
-            static_cast<float>(textureData.width / 3),
-            static_cast<float>(textureData.height / 1.5)
+        hitbox = {x + (textureData.width) / 4.0f,
+            y + (textureData.height) / 4.0f,
+            static_cast<float>(textureData.width) / 3.0f,
+            static_cast<float>(textureData.height) / 1.5f
         };
     }
 }
