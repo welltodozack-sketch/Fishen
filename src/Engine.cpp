@@ -1,7 +1,6 @@
 // Header
 #include "Fishen.hpp"
 #include "raylib.h"
-#include <cctype>
 #include <string>
 
 // Initialize all struct objects with default values
@@ -58,8 +57,17 @@ void initStructs(Player& PLAYER, World& WORLD, Menu& MENU, std::unordered_map<st
     WORLD.groundBox = {WORLD.x, WORLD.y, static_cast<float>(WORLD.ground.width), static_cast<float>(WORLD.ground.height)};
     
     // Menu Handler
-    MENU.isActive = false;
-    MENU.continueButton = {GetScreenWidth()/2.0f - (Textures.at("continueButton").width/2.0f), GetScreenHeight()/2.0f - (Textures.at("continueButton").width/2.5f), static_cast<float>(Textures.at("continueButton").width), static_cast<float>(Textures.at("continueButton").height)};
+    MENU.isActive = true;
+    
+    MENU.continueButton = {GetScreenWidth()/2.0f - (Textures.at("continueButton").width/2.0f), 
+        GetScreenHeight()/2.0f - (Textures.at("continueButton").height/2.5f),
+        static_cast<float>(Textures.at("continueButton").width), 
+        static_cast<float>(Textures.at("continueButton").height)};
+    
+    MENU.playButton = {GetScreenWidth()/2.0f - (Textures.at("playButton").width/2.0f), 
+        GetScreenHeight()/2.0f - (Textures.at("playButton").height/2.5f),
+        static_cast<float>(Textures.at("playButton").width), 
+        static_cast<float>(Textures.at("playButton").height)};
 }
 
 void onDeath(World& WORLD, Player& PLAYER, std::unordered_map<std::string, Sound>& Audio, bool isInputTriggered) {
@@ -84,7 +92,7 @@ void onDeath(World& WORLD, Player& PLAYER, std::unordered_map<std::string, Sound
 }
 
 // Handle user inputs
-void handleInputs(Player& PLAYER) {
+void handleInputs(Player& PLAYER, Menu& MENU) {
     if (IsKeyDown(KEY_UP) && PLAYER.isTouching ||
         IsKeyDown(KEY_W) && PLAYER.isTouching ||
         IsKeyDown(KEY_SPACE) && PLAYER.isTouching ||
@@ -286,15 +294,20 @@ int main(void)
             MENU.isActive = true;
         }
         else if (IsKeyPressed(KEY_ESCAPE) && MENU.isActive) {
-            break;
+            PLAYER.isPlaying = false;
+            PLAYER.x = GetScreenWidth() / 3.0f;
+            PLAYER.y = GetScreenHeight() - PLAYER.size;
+            PLAYER.rotation = 0.0f;
+
+            Level = levelResetState;
         }
 
-        if (!MENU.isActive) {
+        if (!MENU.isActive && PLAYER.isPlaying) {
             if (IsKeyPressed(KEY_R)) {
                 onDeath(WORLD, PLAYER, Audio, true);
             }
             // Background checks
-            handleInputs(PLAYER);
+            handleInputs(PLAYER, MENU);
             updateGlobalObjectPosition(WORLD);
             updatePlayer(PLAYER);
             checkCollisions(PLAYER, WORLD, Audio);

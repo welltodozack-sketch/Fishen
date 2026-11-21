@@ -35,6 +35,7 @@ struct World {
 struct Menu {
     bool isActive;
     Rectangle continueButton;
+    Rectangle playButton;
 };
 
 // Draw player icon on screen
@@ -143,13 +144,56 @@ void drawPauseMenu(std::unordered_map<std::string, Texture2D>& Textures, Menu& M
     
 }
 
-void drawMainMenu() {
+void drawMainMenu(std::unordered_map<std::string, Texture2D>& Textures, Menu& MENU, Player& PLAYER) {
+    static Texture2D mainMenuBackground = Textures.at("mainMenuBG");
+    static Texture2D playButtonTexture = Textures.at("playButton");
+    static Texture2D playButtonTextureHover = Textures.at("playButtonHover");
+    static Texture2D playButtonTextureInput = Textures.at("playButtonInput");
+    Vector2 mousePos = GetMousePosition();
     
+    // Draw Textures
+    DrawTextureEx(mainMenuBackground, (Vector2){0, 0}, 0.0f, 1.0f, WHITE);
+    
+    // check for inputs
+    if (!CheckCollisionPointRec(mousePos, MENU.continueButton)) {
+        // continue button
+        DrawTextureEx(playButtonTexture, 
+            (Vector2){GetScreenWidth()/2.0f - (playButtonTexture.width/2.0f), GetScreenHeight()/2.0f - (playButtonTexture.width/2.5f)}, 
+            0.0f,
+            1.0f,
+            WHITE);
+    }
+    else if (CheckCollisionPointRec(mousePos, MENU.continueButton)) {
+
+        if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)) {
+           // continue button
+         DrawTextureEx(playButtonTextureInput, 
+            (Vector2){GetScreenWidth()/2.0f - (playButtonTextureInput.width/2.0f), GetScreenHeight()/2.0f - (playButtonTextureInput.width/2.5f)}, 
+            0.0f,
+            1.0f,
+            WHITE);          
+        }
+        else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                MENU.isActive = false;
+                PLAYER.isPlaying = true;
+            }
+        else {
+        // continue button
+        DrawTextureEx(playButtonTextureHover, 
+            (Vector2){GetScreenWidth()/2.0f - (playButtonTexture.width/2.0f), GetScreenHeight()/2.0f - (playButtonTexture.width/2.5f)}, 
+            0.0f,
+            1.0f,
+            WHITE);
+        }
+    }
 }
 
 // Draw Everything on screen in order (Order is VERY IMPORTANT!)
 void drawOnScreen(std::unordered_map<std::string, Texture2D>& Textures, Player& PLAYER, World& WORLD, Menu& MENU) {
-    drawTextures(WORLD, PLAYER, Textures); // Draw textures on screen
-    // drawHitboxes(PLAYER, WORLD, MENU); // Draw all world hitboxes
-    if (MENU.isActive) drawPauseMenu(Textures, MENU);
+    if (PLAYER.isPlaying) {
+        drawTextures(WORLD, PLAYER, Textures); // Draw textures on screen
+        // drawHitboxes(PLAYER, WORLD, MENU); // Draw all world hitboxes
+        if (MENU.isActive) drawPauseMenu(Textures, MENU);
+    }
+    else if (!PLAYER.isPlaying && MENU.isActive) drawMainMenu(Textures, MENU, PLAYER);
 };
