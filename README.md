@@ -13,7 +13,7 @@ This repository serves as a <b>track record</b> of all changes in my GD clone an
 # Building process
 
 ### This is temporary! Once I fix some security issues, I will start committing using the Git CLI, which means I will be able to add the Raylib submodule.
-If you wish to check out the project for yourself with the intent off adding or changing something, then the next section is for you.
+If you wish to check out the project for yourself with the intent off adding or changing content, then the next section is for you.
 
 ## Cloning into Fishen
 > [!CAUTION]
