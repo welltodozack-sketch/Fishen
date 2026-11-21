@@ -21,7 +21,7 @@ std::vector<levelObject> levelResetState;
 
 
 void assignTypeToObject(std::string& object, int& type) {
-    std::string forEachCharacter;
+    static std::string forEachCharacter;
 
     for (int i = 0; i < strlen(object.c_str()); ++i) {
         if (!std::isdigit(object[i])) {
@@ -38,6 +38,8 @@ void assignTypeToObject(std::string& object, int& type) {
     else if (forEachCharacter == "spike") {
         type = 1;
     }
+
+    forEachCharacter = "";
 }
 
 void assignHitboxToObject(std::unordered_map<std::string, Texture2D>& Textures, int& type, float& x, float& y, Rectangle& hitbox, Texture2D& textureData) {
@@ -50,10 +52,10 @@ void assignHitboxToObject(std::unordered_map<std::string, Texture2D>& Textures, 
         };
     }
     else if (type == 1) {
-        hitbox = {x + (textureData.width) / 4.0f,
-            y + (textureData.height) / 4.0f,
-            static_cast<float>(textureData.width) / 3.0f,
-            static_cast<float>(textureData.height) / 1.5f
+        hitbox = {x + (textureData.width / 3.0f),
+            y + (textureData.height / 4.0f),
+            static_cast<float>(textureData.width / 3.0f),
+            static_cast<float>(textureData.height / 1.5f)
         };
     }
 }
@@ -61,11 +63,11 @@ void assignHitboxToObject(std::unordered_map<std::string, Texture2D>& Textures, 
 
 void loadLevelFromFile(const std::string& path, std::unordered_map<std::string, Texture2D>& Textures) {
     if (std::filesystem::exists(path)) {
-        std::string object;
-        int type;
-        float x;
-        float y;
-        Rectangle hitbox;
+        static std::string object;
+        static int type;
+        static float x;
+        static float y;
+        static Rectangle hitbox;
 
         std::fstream readFromFile;
         readFromFile.open(path);
@@ -80,6 +82,7 @@ void loadLevelFromFile(const std::string& path, std::unordered_map<std::string, 
             Level.push_back({Textures.at(object), type, x, y, hitbox});
 
             object = "";
+            type = 0;
             x = 0;
             y = 0;
             hitbox = {};
@@ -88,4 +91,9 @@ void loadLevelFromFile(const std::string& path, std::unordered_map<std::string, 
         readFromFile.close();
         levelResetState = Level;
     }
+}
+
+void unloadLevelData() {
+    Level.clear();
+    levelResetState.clear();
 }

@@ -1,11 +1,14 @@
 // Header
 #include "Fishen.hpp"
 #include "raylib.h"
+#include <cctype>
+#include <string>
 
 // Initialize all struct objects with default values
 void initStructs(Player& PLAYER, World& WORLD, Menu& MENU, std::unordered_map<std::string, Texture2D>& Textures) {
     // Player
     PLAYER.isTouching = false;
+    PLAYER.isPlaying = false;
 
     PLAYER.size = 100;
     PLAYER.x = GetScreenWidth() / 3.0f;
@@ -54,11 +57,12 @@ void initStructs(Player& PLAYER, World& WORLD, Menu& MENU, std::unordered_map<st
     
     WORLD.groundBox = {WORLD.x, WORLD.y, static_cast<float>(WORLD.ground.width), static_cast<float>(WORLD.ground.height)};
     
-    // Main Menu
+    // Menu Handler
     MENU.isActive = false;
+    MENU.continueButton = {GetScreenWidth()/2.0f - (Textures.at("continueButton").width/2.0f), GetScreenHeight()/2.0f - (Textures.at("continueButton").width/2.5f), static_cast<float>(Textures.at("continueButton").width), static_cast<float>(Textures.at("continueButton").height)};
 }
 
-void onDeath(World& WORLD, Player& PLAYER, bool isInputTriggered) {
+void onDeath(World& WORLD, Player& PLAYER, std::unordered_map<std::string, Sound>& Audio, bool isInputTriggered) {
     Level = levelResetState;
     WORLD.groundMovement = 0;
     WORLD.backgroundMovement = 0;
@@ -70,7 +74,13 @@ void onDeath(World& WORLD, Player& PLAYER, bool isInputTriggered) {
     if (isInputTriggered) {
         return;
     }
-    else std::this_thread::sleep_for(std::chrono::milliseconds(750));
+    else {
+        // play death audio
+        SetSoundVolume(Audio.at("meow1"), 5.0f);
+        PlaySound(Audio.at("meow1"));
+        // Handle player death state
+        std::this_thread::sleep_for(std::chrono::milliseconds(750));
+    }
 }
 
 // Handle user inputs
@@ -162,7 +172,7 @@ void updatePlayer(Player& PLAYER) {
 
 
 // handle collision checks
-void checkCollisions(Player& PLAYER, World& WORLD) {
+void checkCollisions(Player& PLAYER, World& WORLD, std::unordered_map<std::string, Sound>& Audio) {
 
     bool collided = false;
 
@@ -197,18 +207,18 @@ void checkCollisions(Player& PLAYER, World& WORLD) {
         }
         // Else check for collision with the inner box (if the player is bellow the top of the block)
         else if (CheckCollisionRecs(PLAYER.innerBox, object.hitbox)) {
-            onDeath(WORLD, PLAYER, false);
+            onDeath(WORLD, PLAYER, Audio, false);
             return; // stop iterating - reset level
         }
-
-        if (object.type == 1) {
-            onDeath(WORLD, PLAYER, false);
-        }
         // Check for spike collisions
+        if (object.type == 1) {
+            onDeath(WORLD, PLAYER, Audio, false);
+        }
     }
 
     PLAYER.isTouching = collided;
 }
+
 
 /*
 void checkCollisions(struct Player& PLAYER, struct World& WORLD) {
@@ -227,9 +237,9 @@ void checkCollisions(struct Player& PLAYER, struct World& WORLD) {
         if (CheckCollisionRecs(PLAYER.hitbox, object.hitbox)) {
 
             if (PLAYER.y > object.hitbox.y + (object.hitbox.height / 5.0f) && object.type == 0) {
-                if (CheckCollisionRecs(PLAYER.innerBox, object.hitbox)) {
-                    onDeath(WORLD);
-                }
+                if (CheckCollisionReCloseWindow();cs(PLAYER.innerBox, object.hitbox)) {
+                    onDeath(WORLD, PLAYER, false);
+                }drawHitboxes(PLAYER, WORLD, MENU);
             }
             else {
                 collided = true;
@@ -246,6 +256,7 @@ void checkCollisions(struct Player& PLAYER, struct World& WORLD) {
 }
 */
 
+
 // MAIN
 int main(void)
 {
@@ -254,34 +265,39 @@ int main(void)
     World WORLD;
     Menu MENU;
 
-    std::string path = "../resources/textures";
+    const std::string path = "../resources";
     std::string levelPath = "../resources/levels/level1.txt";
     std::unordered_map<std::string, Texture2D> Textures;
+    std::unordered_map<std::string, Sound> Audio;
 
     InitWindow(WIDTH, HEIGHT, WINDOW_TITLE);
+    InitAudioDevice();
     SetTargetFPS(FRAMERATE);
     SetExitKey(KEY_BACKSPACE);
     
     // Load game data and initialize
-    loadTextureData(path, Textures);
+    loadTextureData(path, Textures, Audio);
     loadLevelFromFile(levelPath, Textures);
     initStructs(PLAYER, WORLD, MENU, Textures);
 
     // Game loop
-    while (!WindowShouldClose()) {   
-        if (IsKeyPressed(KEY_ESCAPE)) {
-            MENU.isActive = !MENU.isActive;
+    while (!WindowShouldClose()) {  
+        if (IsKeyPressed(KEY_ESCAPE) && !MENU.isActive) {
+            MENU.isActive = true;
+        }
+        else if (IsKeyPressed(KEY_ESCAPE) && MENU.isActive) {
+            break;
         }
 
         if (!MENU.isActive) {
             if (IsKeyPressed(KEY_R)) {
-                onDeath(WORLD, PLAYER, true);
+                onDeath(WORLD, PLAYER, Audio, true);
             }
             // Background checks
             handleInputs(PLAYER);
             updateGlobalObjectPosition(WORLD);
             updatePlayer(PLAYER);
-            checkCollisions(PLAYER, WORLD);
+            checkCollisions(PLAYER, WORLD, Audio);
         }
 
         // Update frames
@@ -290,7 +306,7 @@ int main(void)
         EndDrawing();
     }
 
-    unloadTextureData(Textures);
+    unloadTextureData(Textures, Audio);
     CloseWindow();
 
     return 0;
