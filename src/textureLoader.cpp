@@ -39,7 +39,7 @@ void loadTextureData(const std::string& path, std::unordered_map<std::string, Te
     }
 }
 
-void unloadTextureData(std::unordered_map<std::string, Texture2D>& Textures, std::unordered_map<std::string, Sound>& Audio) {
+void unloadGameData(std::unordered_map<std::string, Texture2D>& Textures, std::unordered_map<std::string, Sound>& Audio) {
     for (auto& [Key, texture] : Textures) {
         UnloadTexture(texture);
     }

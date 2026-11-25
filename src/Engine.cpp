@@ -12,15 +12,16 @@ void initStructs(Player& PLAYER, World& WORLD, Menu& MENU, std::unordered_map<st
     PLAYER.size = 100;
     PLAYER.x = GetScreenWidth() / 3.0f;
     PLAYER.y = GetScreenHeight() - PLAYER.size;
+    PLAYER.yOrigin = PLAYER.y;
     PLAYER.rotation = 0.0f;
+    PLAYER.jumpPower = 30;
      
     switch (FRAMERATE) {
         case 60:
-            PLAYER.jumpPower = 30;
             break;
 
         case 120:
-            PLAYER.jumpPower = 15;
+            PLAYER. jumpPower = PLAYER.jumpPower / 2.0f;
             break;
 
         default:
@@ -40,14 +41,14 @@ void initStructs(Player& PLAYER, World& WORLD, Menu& MENU, std::unordered_map<st
     WORLD.y = static_cast<float>(GetScreenHeight() - WORLD.ground.height);
     WORLD.groundMovement = 0;
     WORLD.backgroundMovement = 0;
+    WORLD.speed = 10.0f;
 
     switch (FRAMERATE) {
         case 60:
-            WORLD.speed = 10.0f;
             break;
 
         case 120:
-            WORLD.speed = 5.0f;
+            WORLD.speed = WORLD.speed / 2.0f;
             break;
 
         default:
@@ -58,6 +59,7 @@ void initStructs(Player& PLAYER, World& WORLD, Menu& MENU, std::unordered_map<st
     
     // Menu Handler
     MENU.isActive = true;
+    MENU.configActive = false;
     
     MENU.continueButton = {GetScreenWidth()/2.0f - (Textures.at("continueButton").width/2.0f), 
         GetScreenHeight()/2.0f - (Textures.at("continueButton").height/2.5f),
@@ -68,9 +70,15 @@ void initStructs(Player& PLAYER, World& WORLD, Menu& MENU, std::unordered_map<st
         GetScreenHeight()/2.0f - (Textures.at("playButton").height/2.5f),
         static_cast<float>(Textures.at("playButton").width), 
         static_cast<float>(Textures.at("playButton").height)};
+
+    MENU.configButton = {GetScreenWidth()/1.3f - (Textures.at("configButton").width/2.0f), 
+        GetScreenHeight()/1.5f - (Textures.at("configButton").height/2.0f),
+        static_cast<float>(Textures.at("configButton").width),
+        static_cast<float>(Textures.at("configButton").height)};
 }
 
 void onDeath(World& WORLD, Player& PLAYER, std::unordered_map<std::string, Sound>& Audio, bool isInputTriggered) {
+    static Sound Death = Audio.at("meow1");
     Level = levelResetState;
     WORLD.groundMovement = 0;
     WORLD.backgroundMovement = 0;
@@ -84,8 +92,8 @@ void onDeath(World& WORLD, Player& PLAYER, std::unordered_map<std::string, Sound
     }
     else {
         // play death audio
-        SetSoundVolume(Audio.at("meow1"), 5.0f);
-        PlaySound(Audio.at("meow1"));
+        SetSoundVolume(Death, 5.0f);
+        PlaySound(Death);
         // Handle player death state
         std::this_thread::sleep_for(std::chrono::milliseconds(750));
     }
@@ -102,7 +110,6 @@ void handleInputs(Player& PLAYER, Menu& MENU) {
         PLAYER.velocity = PLAYER.jumpPower;
         }
 }
-
 // Handle player rotation animation
 void handlePlayerRotation(Player& PLAYER) {
 
@@ -114,6 +121,7 @@ void handlePlayerRotation(Player& PLAYER) {
 }
 
 // Update all stored level objects position
+
 void updateGlobalObjectPosition(World& WORLD) {
     // Update world movement && reset
     WORLD.groundMovement -= WORLD.speed;
@@ -133,7 +141,6 @@ void updateGlobalObjectPosition(World& WORLD) {
         case 1:
             object.x -= WORLD.speed;
             object.hitbox.x = object.x + (object.texture.width / 3.0f);
-            object.hitbox.y = object.y + (object.texture.height / 4.0f);
             break;
 
         default:
@@ -142,8 +149,9 @@ void updateGlobalObjectPosition(World& WORLD) {
     }
 }
 
+
 // Update player state
-void updatePlayer(Player& PLAYER) {
+void updatePlayer(Player& PLAYER, World& WORLD) {
 
     // Update player velocity
     if (!PLAYER.isTouching) {
@@ -309,18 +317,19 @@ int main(void)
             // Background checks
             handleInputs(PLAYER, MENU);
             updateGlobalObjectPosition(WORLD);
-            updatePlayer(PLAYER);
+            updatePlayer(PLAYER, WORLD);
             checkCollisions(PLAYER, WORLD, Audio);
         }
 
         // Update frames
         BeginDrawing();
-            drawOnScreen(Textures, PLAYER, WORLD, MENU);
+            drawOnScreen(PLAYER, WORLD, MENU, Textures);
         EndDrawing();
     }
 
-    unloadTextureData(Textures, Audio);
     CloseWindow();
+    CloseAudioDevice(); 
+    unloadGameData(Textures, Audio);
 
     return 0;
 }
